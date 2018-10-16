@@ -2,30 +2,30 @@ import json, datetime
 import pandas as pd
 from elasticsearch import Elasticsearch, helpers
 
-qdf =  pd.read_csv('data/questions.csv', sep=',', header=None,
+qdf =  pd.read_csv('data_gv/questions.csv', sep=',', header=None,
                    names=['questionId', 'date', 'userId', 'categoryId',
                   'question', 'description'], quotechar='"',
                    error_bad_lines=False, escapechar='\\', na_filter=False)
 
-adf =  pd.read_csv('data/answers.csv', sep=',', header=None,
+adf =  pd.read_csv('data_gv/answers.csv', sep=',', header=None,
                    names=['answerId', 'date', 'userId', 'questionId',
                   'answer', 'thumbsDown', 'thumbsUp',
                   'isBestAnswer'], quotechar='"',
                    error_bad_lines=False, escapechar='\\', na_filter=False)
 
-cdf =  pd.read_csv('data/categories.csv', sep=',', header=None,
+cdf =  pd.read_csv('data_gv/categories.csv', sep=',', header=None,
                    names=['categoryId', 'parentId', 'category'],
                    quotechar='"',error_bad_lines=False,
                    escapechar='\\', na_filter=False)
 
-udf =  pd.read_csv('data/users.csv', sep=',', header=None,
+udf =  pd.read_csv('data_gv/users.csv', sep=',', header=None,
                     names=['userId', 'registrationDate', 'expertise',
                     'bestAnswers'], quotechar='"',
                     error_bad_lines=False, escapechar='\\', na_filter=False)
 
 def create_questions_doc(panda):
     docs = []
-    for index, row in qdf.iterrows():
+    for index, row in panda.iterrows():
         date = datetime.datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
         doc = {
             '_index' : "questions",
@@ -44,7 +44,7 @@ def create_questions_doc(panda):
 
 def create_answers_doc(panda):
     docs = []
-    for index, row in qdf.iterrows():
+    for index, row in panda.iterrows():
         date = datetime.datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
         doc = {
             '_index' : "answers",
@@ -65,7 +65,7 @@ def create_answers_doc(panda):
 
 def create_categories_doc(panda):
     docs = []
-    for index, row in qdf.iterrows():
+    for index, row in panda.iterrows():
         doc = {
             '_index' : "categories",
             '_type' : "category",
@@ -80,7 +80,7 @@ def create_categories_doc(panda):
 
 def create_users_doc(panda):
     docs = []
-    for i, row in qdf.iterrows():
+    for i, row in panda.iterrows():
         date = datetime.datetime.strptime(row['registrationDate'], '%Y-%m-%d %H:%M:%S')
         doc = {
             '_index' : "users",
@@ -97,11 +97,6 @@ def create_users_doc(panda):
 
 # init elastic search API
 es = Elasticsearch(hosts=['http://localhost:9200/'])
-
-# if es.indices.exists(index='questions'):
-#     es.indices.delete(index='index')#, ignore=[400, 404])
-#     print('Previous version of index removed!\nReplacing with new!')
-
 
 # index file
 print("Loading questions")
