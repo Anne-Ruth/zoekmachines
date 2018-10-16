@@ -1,31 +1,28 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from elasticsearch import Elasticsearch
 
 app = Flask(__name__)
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 @app.route('/')
-def student():
+def index():
    return render_template('index.html')
 
-@app.route('/result',methods = ['POST', 'GET'])
+@app.route('/result',methods = ['POST'])
 def result():
-   if request.method == 'POST':
-      result = request.form
-      return render_template("result.html",result = result)
+    keyword = request.form['search']
 
-if __name__ == '__main__':
-   app.run(debug = True)
-
-def simple_search(es, query):
-    return es.search(index="goeievraag", doc_type="questions", body={
+    body = {
         "query": {
             "multi_match": {
-                "query": query,
+                "query": keyword,
                 "fields": ["question", "description"]
             }
         }
-    })
+    }
 
-searchresult = simple_search(es, result)
-print(searchresult)
+    res = es.search(index="questions", size=10000, doc_type="question", body=body)
+    return render_template("result.html",result = res)
+
+if __name__ == '__main__':
+   app.run(debug = True)
