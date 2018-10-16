@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>Eend eend ga</title>
   </head>
+<body>
+  <div class="body">
+    <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
+    <p>Doe zoeken dan slet.</p>
+    <div class="navbar">
+        <form class="form" action = "http://localhost:5000/result" method = "POST">
+          <input type="text" placeholder="doe ff typtyp hier" name="search">
+          <button class="btn" type="submit">getwoe</button>
+      	  <div>
+      	    <label><input type="checkbox" checked name="questions">Questions</label>
+            <label><input type="checkbox" checked name="answers">Answers</label>
+      	    <label><input type="checkbox" checked name="users">Users</label>
+      	    <label><input type="checkbox" checked name="categories">Categories</label>
+      	  </div>
+        </form>
+     </div>
+    </div>
+</body>
 
-  <body>
-  <h1><a href="{{ url_for('.index') }}">Eend eend ga</a></h1>
-  <p>Doe zoeken dan slet.</p>
-
-  <div class="navbar">
-    <form action = "http://localhost:5000/result" method = "POST">
-      <input type="text" placeholder="doe ff typtyp hier" name="search">
-      <button type="submit">getwoe</button>
-    </form>
-  </div>
-
-  </body>
 </html>
+<!-- <form name="search" action="/test" method="post">
+  <input type="text" placeholder="doe ff typtyp hier" name="search">
+  <button type="submit">getwoe</button>
+</form> -->

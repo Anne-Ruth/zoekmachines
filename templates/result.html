@@ -1,45 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" type="text/css" href="static/style.css">
-    <title>Page Title</title>
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
+    <title>Results</title>
   </head>
 
   <body>
-    <h1><a href="{{ url_for('.index') }}">Eend eend ga</a></h1>
-
-    <div class="navbar">
-      <form action = "http://localhost:5000/result" method = "POST">
-        <input type="text" placeholder="search..." name="search">
-        <button type="submit">getwoe</button>
-      </form>
-    </div>
-
-    <table class="table">
-    <thead>
-      <tr>
-        <th>Question ID</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-
-    <center>
-    <h1>Results: ({{ result['hits']['total'] }}) </h1>
-    </center>
-
-    {% for hit in result['hits']['hits'] %}
-      <tbody>
+    <div class="body">
+      <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
+      <p>Doe zoeken dan slet.</p>
+      <div class="navbar">
+        <form class="form" action = "http://localhost:5000/result" method = "POST">
+          <input type="text" placeholder="search..." name="search">
+          <button class="btn" type="submit">getwoe</button>
+          <div>
+      	    <label><input type="checkbox" checked name="questions">Questions</label>
+            <label><input type="checkbox" checked name="answers">Answers</label>
+      	    <label><input type="checkbox" checked name="users">Users</label>
+      	    <label><input type="checkbox" checked name="categories">Categories</label>
+      	  </div>
+        </form>
+      </div>
+</div>
+      <table class="table">
+      <thead>
         <tr>
-          <td>{{ hit['_source']['questionId'] }}</td>
-          <td>{{ hit['_source']['question'] }}</td>
-          <td>{{ hit['_source']['description'] }}</td>
-          <td>{{ hit['_source']['date'] }}</td>
+          <th>Question ID</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Date</th>
         </tr>
-      </tbody>
-    {% endfor %}
-    </table>
+      </thead>
 
+      <center>
+      <h1>Results: ({{ result['hits']['total'] }}) </h1>
+      </center>
+
+      {% for hit in result['hits']['hits'] %}
+        <tbody>
+          <tr>
+            <td>{{ hit['_source']['questionId'] }}</td>
+            <td>{{ hit['_source']['question'] }}</td>
+            <td>{{ hit['_source']['description'] }}</td>
+            <td>{{ hit['_source']['date'] }}</td>
+          </tr>
+        </tbody>
+      {% endfor %}
+      </table>
   </body>
 </html>

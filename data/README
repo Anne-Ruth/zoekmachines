@@ -1,0 +1,20 @@
+This data set contains questions, answers, and basic user data from goeievraag.nl. Goeievraag.nl is a Dutch community question-answer site.
+The data in the set is from the period Jan 28, 2009 to Jan 13, 2013.
+
+questions.zip
+- 402,133 questions (after import in MySQL)
+- questionId, date, userId, categoryId, question, description
+
+answers.zip
+- 1,410,695 answers
+- answerId, date, userId, questionId, answer, thumbsDown, thumbsUp, isBestAnswer
+
+users.zip
+- 138,865 users
+- userId, registrationDate, expertise, bestAnswers
+
+categories.zip
+- 161 categories
+  * 1 top category ("all")
+  * 15 major categories (parentId=1)
+- categoryId, parentId, catergory
