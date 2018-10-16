@@ -25,11 +25,12 @@ udf =  pd.read_csv('data_gv/users.csv', sep=',', header=None,
 
 def create_questions_doc(panda):
     docs = []
-    for index, row in panda.iterrows():
+    for i, row in panda.iterrows():
         date = datetime.datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
         doc = {
             '_index' : "questions",
             '_type' : "question",
+            '_id' : row['questionId'],
             '_source' : {
                 'questionId' : row['questionId'],
                 'date' : date,
@@ -44,11 +45,12 @@ def create_questions_doc(panda):
 
 def create_answers_doc(panda):
     docs = []
-    for index, row in panda.iterrows():
+    for i, row in panda.iterrows():
         date = datetime.datetime.strptime(row['date'], '%Y-%m-%d %H:%M:%S')
         doc = {
             '_index' : "answers",
             '_type' : "answer",
+            '_id' : row['answerId'],
             '_source' : {
                 'answerId' : row['answerId'],
                 'date' : date,
@@ -65,10 +67,11 @@ def create_answers_doc(panda):
 
 def create_categories_doc(panda):
     docs = []
-    for index, row in panda.iterrows():
+    for i, row in panda.iterrows():
         doc = {
             '_index' : "categories",
             '_type' : "category",
+            '_id' : row['categoryId'],
             '_source' : {
                 'categoryId' : row['categoryId'],
                 'parentId' : row['parentId'],
@@ -85,6 +88,7 @@ def create_users_doc(panda):
         doc = {
             '_index' : "users",
             '_type' : "user",
+            '_id' : row['userId'],
             '_source' : {
                 'userId' : row['userId'],
                 'registrationDate' : date,
@@ -95,10 +99,22 @@ def create_users_doc(panda):
         docs.append(doc)
     return docs
 
-# init elastic search API
 es = Elasticsearch(hosts=['http://localhost:9200/'])
 
-# index file
+if es.indices.exists(index="questions"):
+    es.indices.delete(index="questions")#, ignore=[400, 404])
+    print('Previous version of index removed!\nReplacing with new!')
+if es.indices.exists(index="answers"):
+    es.indices.delete(index="answers")#, ignore=[400, 404])
+    print('Previous version of index removed!\nReplacing with new!')
+if es.indices.exists(index="categories"):
+    es.indices.delete(index="categories")#, ignore=[400, 404])
+    print('Previous version of index removed!\nReplacing with new!')
+if es.indices.exists(index="users"):
+    es.indices.delete(index="users")#, ignore=[400, 404])
+    print('Previous version of index removed!\nReplacing with new!')
+
+
 print("Loading questions")
 q_docs = create_questions_doc(qdf)
 helpers.bulk(es, q_docs)
@@ -112,7 +128,7 @@ print("Loading users")
 u_docs = create_users_doc(udf)
 helpers.bulk(es, u_docs)
 
-# refresh to have the index take effect
+
 es.indices.refresh(index='questions')
 es.indices.refresh(index='answers')
 es.indices.refresh(index='categories')
