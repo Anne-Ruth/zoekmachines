@@ -1,14 +1,25 @@
 <!doctype html>
 <html>
-   <body>
+  <head>
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <title>Page Title</title>
+  </head>
 
-      <table border = 1>
-         {% for key, value in result.items() %}
-         
-            {{ value }}
+  <body>
+    <h1>Eend eend ga</h1>
 
-         {% endfor %}
-      </table>
+    <!-- {% for key, value in result.items() %} -->
 
-   </body>
+       {{ value }}
+
+    <div class="navbar">
+      <form action = "http://localhost:5000/result" method = "POST">
+        <input type="text" value= {{ value }} name="search">
+        <button type="submit">getwoe</button>
+      </form>
+    </div>
+
+    <!-- {% endfor %} -->
+
+  </body>
 </html>

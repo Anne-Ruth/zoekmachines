@@ -2,7 +2,7 @@ from flask import Flask, render_template, request
 from elasticsearch import Elasticsearch
 
 app = Flask(__name__)
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])ye
+es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 @app.route('/')
 def student():
@@ -27,5 +27,5 @@ def simple_search(es, query):
         }
     })
 
-# searchresult = simple_search(es, result)
-# print(searchresult)
+searchresult = simple_search(es, result)
+print(searchresult)
