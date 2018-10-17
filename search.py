@@ -1,6 +1,24 @@
 from flask import Flask, render_template, request, jsonify
 from elasticsearch import Elasticsearch
 
+from collections import Counter
+from datetime import datetime as dt
+
+class Timeline:
+    def __init__(self):
+        self.data = Counter()
+        self.name = ''
+
+    def create_timeline(self, result):
+        dates = []
+        for hit in result['hits']['hits']:
+            date = dt.strptime(hit['_source']['date'], '%Y-%m-%dT%H:%M:%S')
+            self.data[date.strftime("%Y")] += 1
+
+    def setName(self, name):
+        self.name = name
+
+
 app = Flask(__name__)
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
@@ -22,6 +40,8 @@ def result():
     }
 
     res = es.search(index="questions", size=10000, doc_type="question", body=body)
+    tl.create_timeline(res)
+    tl.setName(keyword)
     return render_template("result.html",result = res)
 
 @app.route('/answer/<int:question_Id>')
@@ -40,5 +60,19 @@ def answers(question_Id):
     a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
     return render_template("answers.html",data = q_res,result = a_res)
 
+@app.route("/timeline")
+def timeline():
+    labels = []
+    values = []
+
+    for i in tl.data:
+        labels.append(i)
+        values.append(tl.data[i])
+    max_value = max(values)
+    # labels = ["January","February","March","April","May","June","July","August"]
+    # values = [10,9,8,7,6,4,7,8]
+    return render_template('timeline.html', values=values, labels=labels, max=max_value, name=tl.name)
+
 if __name__ == '__main__':
-   app.run(debug = True)
+    tl = Timeline()
+    app.run(debug = True)
