@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+      <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
+    <title>Page Title</title>
+  </head>
+
+  <body>
+    <div class="body">
+      <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
+      <p>Doe zoeken dan slet.</p>
+      <div class="navbar">
+        <form class="form" action = "http://localhost:5000/result" method = "POST">
+          <input type="text" placeholder="search..." name="search">
+          <button class="btn" type="submit">getwoe</button>
+          <div>
+            <label><input type="checkbox" checked name="questions">Questions</label>
+            <label><input type="checkbox" checked name="answers">Answers</label>
+            <label><input type="checkbox" checked name="users">Users</label>
+            <label><input type="checkbox" checked name="categories">Categories</label>
+          </div>
+        </form>
+      </div>
+    </div>
+    <table class="table">
+    <thead>
+      <tr>
+        <th>answerId</th>
+        <th>thumbsdown</th>
+        <th>thumbsdown</th>
+        <th>isbestanswer</th>
+        <th>answer</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+
+    <center>
+    <h1>Question: {{ data['_source']['question'] }} </h1>
+    <p> {{ data['_source']['description'] }}</p>
+    </center>
+
+    {% for hit in result['hits']['hits'] %}
+      <tbody>
+        <tr>
+          <td>{{ hit['_source']['answerId'] }}</td>
+          <td>{{ hit['_source']['thumbsDown'] }}</td>
+          <td>{{ hit['_source']['thumbsUp'] }}</td>
+          <td>{{ hit['_source']['isBestAnswer'] }}</td>
+          <td>{{ hit['_source']['answer'] }}</td>
+          <td>{{ hit['_source']['date'] }}</td>
+        </tr>
+      </tbody>
+    {% endfor %}
+    </table>
+
+  </body>
+</html>

@@ -40,7 +40,7 @@
         <tbody>
           <tr>
             <td>{{ hit['_source']['questionId'] }}</td>
-            <td>{{ hit['_source']['question'] }}</td>
+            <td><a href="/answer/{{ hit['_source']['questionId'] }}">{{ hit['_source']['question'] }}</a></td>
             <td>{{ hit['_source']['description'] }}</td>
             <td>{{ hit['_source']['date'] }}</td>
           </tr>
