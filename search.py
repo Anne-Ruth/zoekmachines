@@ -18,31 +18,133 @@ class Timeline:
     def setName(self, name):
         self.name = name
 
-
 app = Flask(__name__)
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 @app.route('/')
 def index():
-   return render_template('index.html')
+    body = {
+        "query": {
+            "match_all" : {}
+        }
+    }
+    res = es.search(index="categories", size=10000, doc_type="category", body=body)
+    return render_template('index.html', cat = res)
 
 @app.route('/result',methods = ['POST'])
 def result():
     keyword = request.form['search']
-
-    body = {
+    startdate = request.form['startdate']
+    enddate = request.form['enddate']
+    category = request.form['categorylist']
+    booty = {
         "query": {
-            "multi_match": {
-                "query": keyword,
-                "fields": ["question", "description"]
-            }
+            "match_all" : {}
         }
     }
 
+    if not startdate:
+        if not enddate:
+            if not category:
+                body = {
+                    "query": {
+                        "multi_match": {
+                            "query": keyword,
+                            "fields": ["question", "description"]
+                        }
+                    }
+                }
+            else:
+                body = {
+                    "query":{
+                        "bool":{
+                            "must":{
+                                "multi_match":{
+                                    "query": keyword,
+                                    "fields":[ "question","description" ]
+                                }
+                            },
+                            "filter": [{
+                                "bool" : {
+                                    "must" : [
+                                        {
+                                            "multi_match": {
+                                                "query": category,
+                                                "fields": ["categoryId"]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }]
+                        }
+                    }
+                }
+
+    elif not category:
+        body = {
+            "query":{
+                "bool":{
+                    "must":{
+                        "multi_match":{
+                            "query": keyword,
+                            "fields":[ "question","description" ]
+                        }
+                    },
+                    "filter": [{
+                        "bool" : {
+                            "must" : [
+                                {
+                                    "range": {
+                                        "date": {
+                                            "gte" : startdate,
+                                            "lte" : enddate
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }]
+                }
+            }
+        }
+
+    else:
+        body = {
+            "query":{
+                "bool":{
+                    "must":{
+                        "multi_match":{
+                            "query": keyword,
+                            "fields":[ "question","description" ]
+                        }
+                    },
+                    "filter": [{
+                        "bool" : {
+                            "should" : [
+                                {
+                                    "range": {
+                                        "date": {
+                                            "gte" : startdate,
+                                            "lte" : enddate
+                                        }
+                                    }
+                                },
+                                {"multi_match": {
+                                    "query": category,
+                                    "fields": ["categoryId"]
+                                }}
+                            ]
+                        }
+                    }]
+                }
+            }
+        }
+
     res = es.search(index="questions", size=10000, doc_type="question", body=body)
+    cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
     tl.create_timeline(res)
     tl.setName(keyword)
-    return render_template("result.html",result = res)
+    return render_template("result.html",result = res, cat=cat)
 
 @app.route('/answer/<int:question_Id>')
 def answers(question_Id):

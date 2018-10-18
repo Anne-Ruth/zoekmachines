@@ -4,27 +4,48 @@
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>Eend eend ga</title>
   </head>
-<body>
-  <div class="body">
-    <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
-    <p>Doe zoeken dan slet.</p>
-    <div class="navbar">
+
+  <body>
+    <div class="body">
+      <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
+      <p>Doe zoeken dan slet.</p>
+
+      <div class="navbar">
         <form class="form" action = "http://localhost:5000/result" method = "POST">
           <input type="text" placeholder="doe ff typtyp hier" name="search">
           <button class="btn" type="submit">getwoe</button>
-      	  <div>
-      	    <label><input type="checkbox" checked name="questions">Questions</label>
-            <label><input type="checkbox" checked name="answers">Answers</label>
-      	    <label><input type="checkbox" checked name="users">Users</label>
-      	    <label><input type="checkbox" checked name="categories">Categories</label>
-      	  </div>
+
+          <a style="cursor: pointer;" onclick="showAdvSearch()">Extra shit</a>
+          <div id="extra" style="display:none;">
+            Tijd units:
+            <input type="date" name="startdate" min="2009-01-28" max="2013-01-13">
+            <input type="date" name="enddate" min="2009-01-28" max="2013-01-13">
+
+            Categorie units:
+            <select name = "categorylist">
+              <option value=""> -Kies een categorie- </option>
+              {% for hit in cat['hits']['hits'] %}
+                <option value = {{ hit['_source']['categoryId'] }}> {{ hit['_source']['category'] }} </option>
+              {% endfor %}
+
+            </select>
+          </div>
+
         </form>
-     </div>
+      </div>
+
     </div>
-</body>
+
+    <script>
+      function showAdvSearch() {
+          var x = document.getElementById("extra");
+          if (x.style.display == "none") {
+              x.style.display = "block";
+          } else {
+              x.style.display = "none";
+          }
+      }
+    </script>
+  </body>
 
 </html>
-<!-- <form name="search" action="/test" method="post">
-  <input type="text" placeholder="doe ff typtyp hier" name="search">
-  <button type="submit">getwoe</button>
-</form> -->

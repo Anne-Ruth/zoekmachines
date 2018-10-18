@@ -9,25 +9,38 @@
     <div class="body">
       <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
       <p>Doe zoeken dan slet.</p>
+
       <div class="navbar">
         <form class="form" action = "http://localhost:5000/result" method = "POST">
-          <input type="text" placeholder="search..." name="search">
+          <input type="text" value={{request.form['search']}} name="search">
           <button class="btn" type="submit">getwoe</button>
-          <div>
-      	    <label><input type="checkbox" checked name="questions">Questions</label>
-            <label><input type="checkbox" checked name="answers">Answers</label>
-      	    <label><input type="checkbox" checked name="users">Users</label>
-      	    <label><input type="checkbox" checked name="categories">Categories</label>
-      	  </div>
+
+          <a style="cursor: pointer;" onclick="showAdvSearch()">Extra shit</a>
+          <div id="extra" style="display:none;">
+            Tijd units:
+            <input type="date" name="startdate" min="2009-01-28" max="2013-01-13" value={{request.form['startdate']}}>
+            <input type="date" name="enddate" min="2009-01-28" max="2013-01-13" value={{request.form['enddate']}}>
+
+            Categorie units:
+            <select name = "categorylist">
+              <option value=""> -Kies een categorie- </option>
+              {% for hit in cat['hits']['hits'] %}
+                <option value = {{ hit['_source']['categoryId'] }}> {{ hit['_source']['category'] }} </option>
+              {% endfor %}
+
+            </select>
+          </div>
+
         </form>
       </div>
-</div>
 
-<div>
-  <a href="{{ url_for('.timeline') }}">Timeline</a>
-</div>
+    </div>
 
-      <table class="table">
+    <div>
+      <a href="{{ url_for('.timeline') }}">Timeline</a>
+    </div>
+
+    <table class="table">
       <thead>
         <tr>
           <th>Question ID</th>
@@ -38,7 +51,7 @@
       </thead>
 
       <center>
-      <h1>Results: ({{ result['hits']['total'] }}) </h1>
+        <h1>Results: ({{ result['hits']['total'] }}) </h1>
       </center>
 
       {% for hit in result['hits']['hits'] %}
@@ -51,6 +64,17 @@
           </tr>
         </tbody>
       {% endfor %}
-      </table>
+    </table>
+
+    <script>
+      function showAdvSearch() {
+          var x = document.getElementById("extra");
+          if (x.style.display == "none") {
+              x.style.display = "block";
+          } else {
+              x.style.display = "none";
+          }
+      }
+    </script>
   </body>
 </html>
