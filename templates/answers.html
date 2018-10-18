@@ -3,7 +3,16 @@
   <head>
     <script type = "text/javascript">
     function showImage(){
-        document.getElementById('img').style.visibility=document.getElementById('img').style.visibility == 'visible'? 'hidden' : 'visible';
+        var x = document.getElementById("img")
+        x.style.visibility=x.style.visibility == 'visible'? 'hidden' : 'visible';
+    }
+    function showFiltSearch() {
+        var x = document.getElementById("filters");
+        if (x.style.display == "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
     }
     </script>
       <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
@@ -11,31 +20,26 @@
   </head>
 
   <body>
+
     <div class="body">
       <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
       <p>Doe zoeken dan slet.</p>
       <div class="navbar">
-        <form class="form" action = "http://localhost:5000/result" method = "POST">
-          <input type="text" placeholder="doe ff typtyp hier" name="search">
-          <button class="btn" type="submit">getwoe</button>
+        <div>
+          <form action="{{ url_for('.index') }}">
+          <button class="btn" type="submit">Nogmaals zoeken</button>
+          </form>
+        </div>
+        <form class="form" action="/a_filters/{{ data['_source']['questionId'] }}" method = "POST">
+          <a style="cursor: pointer;" onclick="showFiltSearch()">Filters</a>
 
-          <a style="cursor: pointer;" onclick="showAdvSearch()">Extra shit</a>
-          <div id="extra" style="display:none;">
-            Tijd units:
-            <input type="date" name="startdate" min="2009-01-28" max="2013-01-13" value={{request.form['startdate']}}>
-            <input type="date" name="enddate" min="2009-01-28" max="2013-01-13" value={{request.form['enddate']}}>
-
-            Categorie units:
-            <select name = "categorylist">
-              <option value=""> -Kies een categorie- </option>
-              {% for hit in cat['hits']['hits'] %}
-                <option value = {{ hit['_source']['categoryId'] }}> {{ hit['_source']['category'] }} </option>
-              {% endfor %}
-
-            </select>
+          <div id="filters" style="display:none;">
+            <input type="checkbox" name="best_answer" > Laat alleen beste antwoord zien<br>
+            <input type="text" placeholder="Mininmale aan likes" name="likes">
+              <button class="btn" type="submit">Pas filters toe</button>
           </div>
-
         </form>
+        <a href="/answer/{{ data['_source']['questionId'] }}" style="cursor: pointer;">Verwijder filters</a>
       </div>
     </div>
     <table class="table">
@@ -73,16 +77,7 @@
     {% endfor %}
     </table>
 
-    <script>
-      function showAdvSearch() {
-          var x = document.getElementById("extra");
-          if (x.style.display == "none") {
-              x.style.display = "block";
-          } else {
-              x.style.display = "none";
-          }
-      }
-    </script>
+
 
   </body>
 </html>

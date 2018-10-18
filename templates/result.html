@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script>
+
+    function showImage(){
+        var x = document.getElementById("img")
+        x.style.visibility=x.style.visibility == 'visible'? 'hidden' : 'visible';
+    }
+      function showAdvSearch() {
+          var x = document.getElementById("extra");
+          if (x.style.display == "none") {
+              x.style.display = "block";
+          } else {
+              x.style.display = "none";
+          }
+      }
+      function showFiltSearch() {
+          var x = document.getElementById("filters");
+          if (x.style.display == "none") {
+              x.style.display = "block";
+          } else {
+              x.style.display = "none";
+          }
+      }
+    </script>
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>Results | {{request.form['search']}}</title>
   </head>
@@ -15,7 +38,7 @@
           <input type="text" value={{request.form['search']}} name="search">
           <button class="btn" type="submit">getwoe</button>
 
-          <a style="cursor: pointer;" onclick="showAdvSearch()">Extra shit</a>
+          <a style="cursor: pointer;" onclick="showAdvSearch()">Geadvanceerd zoeken</a>
           <div id="extra" style="display:none;">
             Tijd units:
             <input type="date" name="startdate" min="2009-01-28" max="2013-01-13" value={{request.form['startdate']}}>
@@ -30,12 +53,34 @@
 
             </select>
           </div>
+          <!-- Voor de filters -->
+          <!-- <form class="form" action="/q_filters/{{ request.form['search'] }}" method = "POST">
+            <a style="cursor: pointer;" onclick="showFiltSearch()">Filters</a>
+            <div id="filters" style="display:none;">
+              Categorie units:
+              <select name = "categorylist">
+                <option value=""> -Kies een categorie- </option>
+                {% for hit in cat['hits']['hits'] %}
+                  <option value = "{{ hit['_source']['categoryId'] }}"> {{ hit['_source']['category'] }} </option>
+                {% endfor %}
+              <input type="text" placeholder="User Id" name="user_field">
+                <button class="btn" type="submit">Pas filters toe</button>
+            </div>
+          </form> -->
 
         </form>
+
+
       </div>
+
+
 
     </div>
 
+    {% if wordcloud %}
+    <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
+    <img id="img" src="{{ path }}" style="visibility:hidden"/>
+    {% endif %}
     <div>
       <a href="{{ url_for('.timeline') }}">Timeline</a>
     </div>
@@ -66,15 +111,6 @@
       {% endfor %}
     </table>
 
-    <script>
-      function showAdvSearch() {
-          var x = document.getElementById("extra");
-          if (x.style.display == "none") {
-              x.style.display = "block";
-          } else {
-              x.style.display = "none";
-          }
-      }
-    </script>
+
   </body>
 </html>

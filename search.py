@@ -154,17 +154,30 @@ def result():
         }
 
     res = es.search(index="questions", size=10000, doc_type="question", body=body)
+
+
+    DutchStop= stopwords.words('dutch')
+    tes = []
+    for item in res['hits']['hits']:
+        tokens = Counter([w for w in nltk.word_tokenize(item['_source']['question'].lower()) if w.isalpha() and not w in set(DutchStop)])
+        tes.append(tokens.keys())
+    flat_list = [item for sublist in tes for item in sublist]
+    flat_list = Counter(flat_list)
+    if len(flat_list) > 0:
+        wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
+        wc.to_file("static/img/wordcloud.png")
+
+
     cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
     tl.create_timeline(res)
     tl.setName(keyword)
-    return render_template("result.html",result = res, cat=cat)
+    return render_template("result.html",result = res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png")
 
 @app.route('/answer/<int:question_Id>')
 def answers(question_Id):
     q_res = es.get(index="questions", doc_type="question", id=question_Id)
 
     body={
-        "size": 1000,
         "query": {
             "match": {
                 "questionId": question_Id
@@ -193,6 +206,154 @@ def answers(question_Id):
         wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
         wc.to_file("static/img/wordcloud.png")
     return render_template("answers.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", cat=cat)
+
+
+@app.route('/a_filters/<int:question_Id>', methods = ['POST'])
+def a_filters(question_Id):
+    likes = request.form['likes']
+    if request.form.get('best_answer'):
+        best = True
+    else:
+        best = False
+    q_res = es.get(index="questions", doc_type="question", id=question_Id)
+    if request.method == "POST":
+
+        booty = {
+            "query": {
+                "match_all" : {}
+            }
+        }
+        if not likes:
+            if not best:
+                body={
+                    "query": {
+                        "match": {
+                            "questionId": question_Id
+                        }
+                    }
+                }
+            else:
+                body = {
+                   "query" : {
+                      "constant_score" : {
+                         "filter" : {
+                            "bool" : {
+                                "must" : [
+                                    { "term" : {"questionId" : question_Id}},
+                                    { "term" : {"isBestAnswer" : 1}}
+                                  ]
+                                }
+                            }
+                        }
+                    }
+                }
+        elif not best:
+            body = {
+               "query" : {
+                  "constant_score" : {
+                     "filter" : {
+                        "bool" : {
+                            "must" : [
+                                { "term" : {"questionId" : question_Id}}
+                              ],
+                            "should": [
+                                { "range": {"thumbsUp" : { "gte": likes }}}
+                              ]
+                            }
+                        }
+                    }
+                }
+            }
+        else:
+            body = {
+               "query" : {
+                  "constant_score" : {
+                     "filter" : {
+                        "bool" : {
+                            "must" : [
+                                { "term" : {"questionId" : question_Id}},
+                                { "term" : {"isBestAnswer" : 1}},
+                              ],
+                             "should": [
+                                 { "range": {"thumbsUp" : { "gte": likes }}}
+                               ]
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+        a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
+        cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
+        return render_template("answers.html",data = q_res,result = a_res, cat=cat)
+
+# Voor de filters
+# app.route('/q_filters/<query>', methods = ['POST'])
+# def q_filters(query):
+#     category = request.form['categorylist']
+#     # print(category)
+#     booty = {
+#         "query": {
+#             "match_all" : {}
+#         }
+#     }
+#
+#     if request.method == "POST":
+#         if not category:
+#             body = {
+#                 "query": {
+#                     "multi_match": {
+#                         "query": query,
+#                         "fields": ["question", "description"]
+#                     }
+#                 }
+#             }
+#         else:
+#             body = {
+#                 "query":{
+#                     "bool":{
+#                         "must":{
+#                             "multi_match":{
+#                                 "query": query,
+#                                 "fields":[ "question","description" ]
+#                             }
+#                         },
+#                         "filter": [{
+#                             "bool" : {
+#                                 "must" : [
+#                                     {
+#                                         "multi_match": {
+#                                             "query": category,
+#                                             "fields": ["category"]
+#                                         }
+#                                     }
+#                                 ]
+#                             }
+#                         }]
+#                     }
+#                 }
+#             }
+#
+#     res = es.search(index="questions", size=10000, doc_type="question", body=body)
+#
+#
+#     DutchStop= stopwords.words('dutch')
+#     tes = []
+#     for item in res['hits']['hits']:
+#         tokens = Counter([w for w in nltk.word_tokenize(item['_source']['question'].lower()) if w.isalpha() and not w in set(DutchStop)])
+#         tes.append(tokens.keys())
+#     flat_list = [item for sublist in tes for item in sublist]
+#     flat_list = Counter(flat_list)
+#     if len(flat_list) > 0:
+#         wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
+#         wc.to_file("static/img/wordcloud.png")
+#
+#     cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
+#     tl.create_timeline(res)
+#     tl.setName(keyword)
+#     return render_template("result.html",result = res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png")
 
 
 @app.route("/timeline")
