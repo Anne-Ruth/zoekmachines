@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 from elasticsearch import Elasticsearch
+import nltk
+
+from wordcloud import WordCloud
+from nltk.corpus import stopwords
 
 from collections import Counter
 from datetime import datetime as dt
@@ -20,6 +24,15 @@ class Timeline:
 
 app = Flask(__name__)
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+
+@app.after_request
+def add_header(r):
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    r.headers["Pragma"] = "no-cache"
+    r.headers["Expires"] = "0"
+    r.headers['Cache-Control'] = 'public, max-age=0'
+    return r
+
 
 @app.route('/')
 def index():
@@ -159,8 +172,28 @@ def answers(question_Id):
         }
     }
 
+    booty = {
+        "query": {
+            "match_all" : {}
+        }
+    }
+
+
     a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
-    return render_template("answers.html",data = q_res,result = a_res)
+    cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
+
+    DutchStop= stopwords.words('dutch')
+    tes = []
+    for item in a_res['hits']['hits']:
+        tokens = Counter([w for w in nltk.word_tokenize(item['_source']['answer'].lower()) if w.isalpha() and not w in set(DutchStop)])
+        tes.append(tokens.keys())
+    flat_list = [item for sublist in tes for item in sublist]
+    flat_list = Counter(flat_list)
+    if len(flat_list) > 0:
+        wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
+        wc.to_file("static/img/wordcloud.png")
+    return render_template("answers.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", cat=cat)
+
 
 @app.route("/timeline")
 def timeline():

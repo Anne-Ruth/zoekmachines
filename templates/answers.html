@@ -1,6 +1,11 @@
 <!doctype html>
 <html>
   <head>
+    <script type = "text/javascript">
+    function showImage(){
+        document.getElementById('img').style.visibility=document.getElementById('img').style.visibility == 'visible'? 'hidden' : 'visible';
+    }
+    </script>
       <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>Question | {{ data['_source']['question'] }}</title>
   </head>
@@ -48,6 +53,10 @@
     <center>
     <h1>Question: {{ data['_source']['question'] }} </h1>
     <p> {{ data['_source']['description'] }}</p>
+    {% if wordcloud %}
+    <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
+    <img id="img" src="{{ path }}" style="visibility:hidden"/>
+    {% endif %}
     </center>
 
     {% for hit in result['hits']['hits'] %}
