@@ -159,8 +159,15 @@ def answers(question_Id):
         }
     }
 
+    booty = {
+        "query": {
+            "match_all" : {}
+        }
+    }
+
     a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
-    return render_template("answers.html",data = q_res,result = a_res)
+    cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
+    return render_template("answers.html",data = q_res,result = a_res, cat=cat)
 
 @app.route("/timeline")
 def timeline():
