@@ -14,6 +14,15 @@
             x.style.display = "none";
         }
     }
+
+    function showExtra() {
+      var x = document.getElementById("extra");
+      if (x.style.display == "none") {
+          x.style.display = "block";
+      } else {
+          x.style.display = "none";
+      }
+    }
     </script>
       <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>Question | {{ data['_source']['question'] }}</title>
@@ -21,9 +30,9 @@
 
   <body>
 
-    <div class="body">
-      <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
-      <p>Doe zoeken dan slet.</p>
+    <div class="header">
+      <h1><a class="header" href="{{ url_for('.index') }}">{{ set.title }}</a></h1>
+      <p>{{ set.subtitle }}</p>
       <div class="navbar">
         <div>
           <form action="{{ url_for('.index') }}">
@@ -40,8 +49,16 @@
           </div>
         </form>
         <a href="/answer/{{ data['_source']['questionId'] }}" style="cursor: pointer;">Verwijder filters</a>
+        <a style="cursor: pointer;" onclick="showExtra()">Extra meuk</a>
+        <div id="extra" style="display:none;">
+          {% if wordcloud %}
+          <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
+          <img id="img" src="{{ path }}" style="visibility:hidden"/>
+          {% endif %}
+      </div>
       </div>
     </div>
+    <div class="body">
     <table class="table">
     <thead>
       <tr>
@@ -57,27 +74,24 @@
     <center>
     <h1>Question: {{ data['_source']['question'] }} </h1>
     <p> {{ data['_source']['description'] }}</p>
-    {% if wordcloud %}
-    <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
-    <img id="img" src="{{ path }}" style="visibility:hidden"/>
-    {% endif %}
     </center>
+    <tbody>
+      {% for hit in result['hits']['hits'] %}
 
-    {% for hit in result['hits']['hits'] %}
-      <tbody>
-        <tr>
-          <td>{{ hit['_source']['answerId'] }}</td>
-          <td>{{ hit['_source']['thumbsDown'] }}</td>
-          <td>{{ hit['_source']['thumbsUp'] }}</td>
-          <td>{{ hit['_source']['isBestAnswer'] }}</td>
-          <td>{{ hit['_source']['answer'] }}</td>
-          <td>{{ hit['_source']['date'] }}</td>
-        </tr>
-      </tbody>
-    {% endfor %}
+          <tr>
+            <td>{{ hit['_source']['answerId'] }}</td>
+            <td>{{ hit['_source']['thumbsDown'] }}</td>
+            <td>{{ hit['_source']['thumbsUp'] }}</td>
+            <td>{{ hit['_source']['isBestAnswer'] }}</td>
+            <td>{{ hit['_source']['answer'] }}</td>
+            <td>{{ hit['_source']['date'] }}</td>
+          </tr>
+
+      {% endfor %}
+    </tbody>
     </table>
 
 
-
+</div>
   </body>
 </html>

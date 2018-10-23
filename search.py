@@ -5,19 +5,29 @@ import nltk
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime as dt
+from datetime import timedelta
 
-class Timeline:
+class Settings:
     def __init__(self):
-        self.data = Counter()
+        self.title = 'Eend eend ga'
+        self.subtitle = 'Doe zoeken dan slet.'
+        self.search = 'getwoe'
+
+class Chart:
+    def __init__(self):
+        self.data = defaultdict(Counter)
         self.name = ''
 
-    def create_timeline(self, result):
-        dates = []
+    def create_data(self, result, data_type):
+        self.data[data_type].clear()
         for hit in result['hits']['hits']:
-            date = dt.strptime(hit['_source']['date'], '%Y-%m-%dT%H:%M:%S')
-            self.data[date.strftime("%Y")] += 1
+            if data_type == 'date':
+                date = dt.strptime(hit['_source'][data_type], '%Y-%m-%dT%H:%M:%S')
+                self.data[data_type][date.strftime("%Y")] += 1
+            else:
+                self.data[data_type][hit['_source'][data_type]] += 1
 
     def setName(self, name):
         self.name = name
@@ -42,10 +52,11 @@ def index():
         }
     }
     res = es.search(index="categories", size=10000, doc_type="category", body=body)
-    return render_template('index.html', cat = res)
+    return render_template('index.html', cat = res, set = settings)
 
 @app.route('/result',methods = ['POST'])
 def result():
+    start_time = dt.now()
     keyword = request.form['search']
     startdate = request.form['startdate']
     enddate = request.form['enddate']
@@ -155,6 +166,9 @@ def result():
 
     res = es.search(index="questions", size=10000, doc_type="question", body=body)
 
+    end_time = dt.now()
+    time_delta = end_time - start_time
+    time_delta = timedelta(days=0, seconds=time_delta.seconds, microseconds=time_delta.microseconds)
 
     DutchStop= stopwords.words('dutch')
     tes = []
@@ -169,9 +183,21 @@ def result():
 
 
     cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
-    tl.create_timeline(res)
-    tl.setName(keyword)
-    return render_template("result.html",result = res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png")
+    chart.create_data(res, 'date')
+    chart.setName(keyword)
+
+    # chart_labels = []
+    # chart_values = []
+    # data_type = 'date'
+    # for i in chart.data[data_type]:
+    #     chart_labels.append(i)
+    #     chart_values.append(chart.data[data_type][i])
+    # max_value = max(chart_values)
+    #
+    # graph = [chart_labels, chart_values, max_value]
+
+
+    return render_template("result.html",result = res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta)#, graph = graph)
 
 @app.route('/answer/<int:question_Id>')
 def answers(question_Id):
@@ -205,7 +231,7 @@ def answers(question_Id):
     if len(flat_list) > 0:
         wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
         wc.to_file("static/img/wordcloud.png")
-    return render_template("answers.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", cat=cat)
+    return render_template("answers.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", cat=cat, set = settings)
 
 
 @app.route('/a_filters/<int:question_Id>', methods = ['POST'])
@@ -360,15 +386,14 @@ def a_filters(question_Id):
 def timeline():
     labels = []
     values = []
-
-    for i in tl.data:
+    data_type = request.args.get('data_type', default = 'date', type = str)
+    for i in chart.data[data_type]:
         labels.append(i)
-        values.append(tl.data[i])
+        values.append(chart.data[data_type][i])
     max_value = max(values)
-    # labels = ["January","February","March","April","May","June","July","August"]
-    # values = [10,9,8,7,6,4,7,8]
-    return render_template('timeline.html', values=values, labels=labels, max=max_value, name=tl.name)
+    return render_template('timeline.html', values=values, labels=labels, max=max_value, name=chart.name)
 
 if __name__ == '__main__':
-    tl = Timeline()
+    settings = Settings()
+    chart = Chart()
     app.run(debug = True)

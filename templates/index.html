@@ -6,14 +6,14 @@
   </head>
 
   <body>
-    <div class="body">
-      <h1><a class="header" href="{{ url_for('.index') }}">Eend eend ga</a></h1>
-      <p>Doe zoeken dan slet.</p>
+    <div class="header">
+      <h1><a class="header" href="{{ url_for('.index') }}">{{ set.title }}</a></h1>
+      <p>{{ set.subtitle }}</p>
 
       <div class="navbar">
         <form class="form" action = "http://localhost:5000/result" method = "POST">
           <input type="text" placeholder="doe ff typtyp hier" name="search">
-          <button class="btn" type="submit">getwoe</button>
+          <button class="btn" type="submit">{{set.search}}</button>
 
           <a style="cursor: pointer;" onclick="showAdvSearch()">Extra shit</a>
           <div id="extra" style="display:none;">

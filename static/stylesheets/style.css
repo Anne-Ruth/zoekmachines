@@ -1,20 +1,36 @@
 .navbar {
-    overflow: hidden;
-    background-color: #333;
-    font-family: Arial, Helvetica, sans-serif;
-    padding-bottom: 10px;
+      overflow: hidden;
+      background-color: #333;
+      font-family: Arial, Helvetica, sans-serif;
+      padding-bottom: 10px;
 }
 
-.body {
+div.header {
+   border-top-left-radius: 130px;
+   border-top-right-radius: 130px;
    padding-top:10px;
    background: #666;
    color: white;
    text-align: center;
-   font: sans-serif;
+   width: 90%;
+   margin-left: 5%;
+}
+
+div.body {
+   /* border-bottom-left-radius: 130px; */
+   /* border-bottom-right-radius: 130px; */
+   background: #666;
+   width: 88%;
+   margin-left: 5%;
+   padding: 2% 1%;
+}
+h1.body {
+  color: white;
 }
 
 a.header{
     color: white;
+    text-decoration: none;
 }
 
 .navbar a {
@@ -44,4 +60,47 @@ a.header{
     margin-bottom: 8px;
     font-size: 17px;
     width: 300px;
+}
+
+th {
+    background: #111;
+    height:40px;
+    color:white;
+}
+
+table.table {
+    border-collapse: collapse;
+    width: 98%;
+    margin-left: 1%;
+    /* border: 5px solid black; */
+}
+
+th, td {
+  padding: 2px 10px;
+}
+
+th.q, td.q {
+    width: 10%;
+    font-weight: bold;
+    text-align: center;
+}
+
+th.d, td.d {
+    width: 50%;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(odd) {
+    background-color: white;
+}
+
+.stats {
+  margin-left: 5%;
+    height: 50%;
+}
+#adv {
+  padding: 14px 16px;
 }
