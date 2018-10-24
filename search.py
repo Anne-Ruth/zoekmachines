@@ -5,7 +5,8 @@ import nltk
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 
-from collections import Counter, defaultdict
+from collections import Counter
+from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
 
@@ -43,7 +44,6 @@ def add_header(r):
     r.headers['Cache-Control'] = 'public, max-age=0'
     return r
 
-
 @app.route('/')
 def index():
     body = {
@@ -61,149 +61,170 @@ def result():
     startdate = request.form['startdate']
     enddate = request.form['enddate']
     category = request.form['categorylist']
+    qtype = request.form['qtype']
+
     booty = {
         "query": {
             "match_all" : {}
         }
     }
 
-    if not startdate:
-        if not enddate:
-            if not category:
-                body = {
-                    "query": {
-                        "multi_match": {
-                            "query": keyword,
-                            "fields": ["question", "description"]
-                        }
-                    }
-                }
-            else:
-                body = {
-                    "query":{
-                        "bool":{
-                            "must":{
-                                "multi_match":{
-                                    "query": keyword,
-                                    "fields":[ "question","description" ]
-                                }
-                            },
-                            "filter": [{
-                                "bool" : {
-                                    "must" : [
-                                        {
-                                            "multi_match": {
-                                                "query": category,
-                                                "fields": ["categoryId"]
-                                            }
-                                        }
-                                    ]
-                                }
-                            }]
-                        }
-                    }
-                }
-
-    elif not category:
+    if qtype == "user":
         body = {
-            "query":{
-                "bool":{
-                    "must":{
-                        "multi_match":{
-                            "query": keyword,
-                            "fields":[ "question","description" ]
-                        }
-                    },
-                    "filter": [{
-                        "bool" : {
-                            "must" : [
-                                {
-                                    "range": {
-                                        "date": {
-                                            "gte" : startdate,
-                                            "lte" : enddate
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }]
+            "query": {
+                "multi_match": {
+                    "query": keyword,
+                    "fields": ["expertise"]
                 }
             }
         }
+        res = es.search(index="users", size=10000, doc_type="user", body=body)
+        end_time = dt.now()
+        time_delta = end_time - start_time
+        time_delta = timedelta(days=0, seconds=time_delta.seconds, microseconds=time_delta.microseconds)
+        cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
+        return render_template("result.html",result=res, cat=cat, set = settings, td = time_delta, qtype=qtype)#, graph = graph)
+
 
     else:
-        body = {
-            "query":{
-                "bool":{
-                    "must":{
-                        "multi_match":{
-                            "query": keyword,
-                            "fields":[ "question","description" ]
+        if not startdate:
+            if not enddate:
+                if not category:
+                    body = {
+                        "query": {
+                            "multi_match": {
+                                "query": keyword,
+                                "fields": ["question", "description"]
+                            }
                         }
-                    },
-                    "filter": [{
-                        "bool" : {
-                            "should" : [
-                                {
-                                    "range": {
-                                        "date": {
-                                            "gte" : startdate,
-                                            "lte" : enddate
-                                        }
+                    }
+                else:
+                    body = {
+                        "query":{
+                            "bool":{
+                                "must":{
+                                    "multi_match":{
+                                        "query": keyword,
+                                        "fields":[ "question","description" ]
                                     }
                                 },
-                                {"multi_match": {
-                                    "query": category,
-                                    "fields": ["categoryId"]
-                                }}
-                            ]
+                                "filter": [{
+                                    "bool" : {
+                                        "must" : [
+                                            {
+                                                "multi_match": {
+                                                    "query": category,
+                                                    "fields": ["categoryId"]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }]
+                            }
                         }
-                    }]
+                    }
+
+        elif not category:
+            body = {
+                "query":{
+                    "bool":{
+                        "must":{
+                            "multi_match":{
+                                "query": keyword,
+                                "fields":[ "question","description" ]
+                            }
+                        },
+                        "filter": [{
+                            "bool" : {
+                                "must" : [
+                                    {
+                                        "range": {
+                                            "date": {
+                                                "gte" : startdate,
+                                                "lte" : enddate
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }]
+                    }
                 }
             }
-        }
 
-    res = es.search(index="questions", size=10000, doc_type="question", body=body)
+        else:
+            body = {
+                "query":{
+                    "bool":{
+                        "must":{
+                            "multi_match":{
+                                "query": keyword,
+                                "fields":[ "question","description" ]
+                            }
+                        },
+                        "filter": [{
+                            "bool" : {
+                                "should" : [
+                                    {
+                                        "range": {
+                                            "date": {
+                                                "gte" : startdate,
+                                                "lte" : enddate
+                                            }
+                                        }
+                                    },
+                                    {"multi_match": {
+                                        "query": category,
+                                        "fields": ["categoryId"]
+                                    }}
+                                ]
+                            }
+                        }]
+                    }
+                }
+            }
 
-    end_time = dt.now()
-    time_delta = end_time - start_time
-    time_delta = timedelta(days=0, seconds=time_delta.seconds, microseconds=time_delta.microseconds)
+        res = es.search(index="questions", size=10000, doc_type="question", body=body)
 
-    DutchStop= stopwords.words('dutch')
-    tes = []
-    for item in res['hits']['hits']:
-        tokens = Counter([w for w in nltk.word_tokenize(item['_source']['question'].lower()) if w.isalpha() and not w in set(DutchStop)])
-        tes.append(tokens.keys())
-    flat_list = [item for sublist in tes for item in sublist]
-    flat_list = Counter(flat_list)
-    if len(flat_list) > 0:
-        wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
-        wc.to_file("static/img/wordcloud.png")
+        end_time = dt.now()
+        time_delta = end_time - start_time
+        time_delta = timedelta(days=0, seconds=time_delta.seconds, microseconds=time_delta.microseconds)
 
-
-    cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
-    chart.create_data(res, 'date')
-    chart.setName(keyword)
-
-    # chart_labels = []
-    # chart_values = []
-    # data_type = 'date'
-    # for i in chart.data[data_type]:
-    #     chart_labels.append(i)
-    #     chart_values.append(chart.data[data_type][i])
-    # max_value = max(chart_values)
-    #
-    # graph = [chart_labels, chart_values, max_value]
+        DutchStop= stopwords.words('dutch')
+        tes = []
+        for item in res['hits']['hits']:
+            tokens = Counter([w for w in nltk.word_tokenize(item['_source']['question'].lower()) if w.isalpha() and not w in set(DutchStop)])
+            tes.append(tokens.keys())
+        flat_list = [item for sublist in tes for item in sublist]
+        flat_list = Counter(flat_list)
+        if len(flat_list) > 0:
+            wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
+            wc.to_file("static/img/wordcloud.png")
 
 
-    return render_template("result.html",result = res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta)#, graph = graph)
+        cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
+        chart.create_data(res, 'date')
+        chart.setName(keyword)
+
+        # chart_labels = []
+        # chart_values = []
+        # data_type = 'date'
+        # for i in chart.data[data_type]:
+        #     chart_labels.append(i)
+        #     chart_values.append(chart.data[data_type][i])
+        # max_value = max(chart_values)
+        #
+        # graph = [chart_labels, chart_values, max_value]
+
+
+        return render_template("result.html",result=res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta, qtype=qtype)#, graph = graph)
 
 @app.route('/answer/<int:question_Id>')
 def answers(question_Id):
     q_res = es.get(index="questions", doc_type="question", id=question_Id)
 
     body={
+        "size": 1000,
         "query": {
             "match": {
                 "questionId": question_Id
@@ -211,15 +232,7 @@ def answers(question_Id):
         }
     }
 
-    booty = {
-        "query": {
-            "match_all" : {}
-        }
-    }
-
-
     a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
-    cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
 
     DutchStop= stopwords.words('dutch')
     tes = []
@@ -231,8 +244,34 @@ def answers(question_Id):
     if len(flat_list) > 0:
         wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
         wc.to_file("static/img/wordcloud.png")
-    return render_template("answers.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", cat=cat, set = settings)
+    return render_template("answers.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", set = settings)
 
+@app.route('/user/<int:user_Id>')
+def users(user_Id):
+    q_res = es.get(index="users", doc_type="user", id=user_Id)
+
+    body={
+        "size": 1000,
+        "query": {
+            "match": {
+                "userId": user_Id
+            }
+        }
+    }
+
+    a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
+
+    DutchStop= stopwords.words('dutch')
+    tes = []
+    for item in a_res['hits']['hits']:
+        tokens = Counter([w for w in nltk.word_tokenize(item['_source']['answer'].lower()) if w.isalpha() and not w in set(DutchStop)])
+        tes.append(tokens.keys())
+    flat_list = [item for sublist in tes for item in sublist]
+    flat_list = Counter(flat_list)
+    if len(flat_list) > 0:
+        wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
+        wc.to_file("static/img/wordcloud.png")
+    return render_template("users.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", set = settings)
 
 @app.route('/a_filters/<int:question_Id>', methods = ['POST'])
 def a_filters(question_Id):
@@ -313,79 +352,14 @@ def a_filters(question_Id):
 
         a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
         cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
-        return render_template("answers.html",data = q_res,result = a_res, cat=cat)
-
-# Voor de filters
-# app.route('/q_filters/<query>', methods = ['POST'])
-# def q_filters(query):
-#     category = request.form['categorylist']
-#     # print(category)
-#     booty = {
-#         "query": {
-#             "match_all" : {}
-#         }
-#     }
-#
-#     if request.method == "POST":
-#         if not category:
-#             body = {
-#                 "query": {
-#                     "multi_match": {
-#                         "query": query,
-#                         "fields": ["question", "description"]
-#                     }
-#                 }
-#             }
-#         else:
-#             body = {
-#                 "query":{
-#                     "bool":{
-#                         "must":{
-#                             "multi_match":{
-#                                 "query": query,
-#                                 "fields":[ "question","description" ]
-#                             }
-#                         },
-#                         "filter": [{
-#                             "bool" : {
-#                                 "must" : [
-#                                     {
-#                                         "multi_match": {
-#                                             "query": category,
-#                                             "fields": ["category"]
-#                                         }
-#                                     }
-#                                 ]
-#                             }
-#                         }]
-#                     }
-#                 }
-#             }
-#
-#     res = es.search(index="questions", size=10000, doc_type="question", body=body)
-#
-#
-#     DutchStop= stopwords.words('dutch')
-#     tes = []
-#     for item in res['hits']['hits']:
-#         tokens = Counter([w for w in nltk.word_tokenize(item['_source']['question'].lower()) if w.isalpha() and not w in set(DutchStop)])
-#         tes.append(tokens.keys())
-#     flat_list = [item for sublist in tes for item in sublist]
-#     flat_list = Counter(flat_list)
-#     if len(flat_list) > 0:
-#         wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
-#         wc.to_file("static/img/wordcloud.png")
-#
-#     cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
-#     tl.create_timeline(res)
-#     tl.setName(keyword)
-#     return render_template("result.html",result = res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png")
+        return render_template("answers.html",data = q_res,result = a_res, cat=cat, set = settings)
 
 
 @app.route("/timeline")
 def timeline():
     labels = []
     values = []
+
     data_type = request.args.get('data_type', default = 'date', type = str)
     for i in chart.data[data_type]:
         labels.append(i)

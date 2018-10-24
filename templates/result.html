@@ -3,12 +3,10 @@
   <head>
     <script src='static/javascript/Chart.min.js'></script>
     <script>
-
       function showImage(){
         var x = document.getElementById("img")
         x.style.visibility=x.style.visibility == 'visible'? 'hidden' : 'visible';
       }
-
       function showAdvSearch() {
           var x = document.getElementById("adv");
           if (x.style.display == "none") {
@@ -17,7 +15,6 @@
               x.style.display = "none";
           }
       }
-
       function showFiltSearch() {
           var x = document.getElementById("filters");
           if (x.style.display == "none") {
@@ -26,7 +23,6 @@
               x.style.display = "none";
           }
       }
-
       function showExtra() {
         var x = document.getElementById("extra");
         if (x.style.display == "none") {
@@ -35,7 +31,6 @@
             x.style.display = "none";
         }
       }
-
       function showGraph(){
         var x = document.getElementById("graph")
         x.style.visibility=x.style.visibility == 'visible'? 'hidden' : 'visible';
@@ -54,6 +49,8 @@
         <form class="form" action = "http://localhost:5000/result" method = "POST">
           <input type="text" value={{request.form['search']}} name="search">
           <button class="btn" type="submit">{{set.search}}</button>
+          <input type="radio" name="qtype" value="question" checked> Vragen
+          <input type="radio" name="qtype" value="user"> Gebruikersexpertise
 
           <a style="cursor: pointer;" onclick="showAdvSearch()">Geadvanceerd zoeken</a>
           <div id="adv" style="display:none;">
@@ -99,30 +96,61 @@
       </div>
     </div>
     <div class="body">
-    <table class="table">
-      <thead>
-        <tr>
-          <th class="t">Title</th>
-          <th class="d">Description</th>
-          <th class="q">Date</th>
-        </tr>
-      </thead>
+      {% if qtype == "question" %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="t">Title</th>
+              <th class="d">Description</th>
+              <th class="q">Date</th>
+            </tr>
+          </thead>
 
-      <center>
-        <h1 class="body">Results: ({{ result['hits']['total'] }} in {{ td.seconds }}.{{ td.microseconds }} s) </h1>
-      </center>
-      <tbody>
-      {% for hit in result['hits']['hits'] %}
+          <center>
+            <h1 class="body">Results: ({{ result['hits']['total'] }} in {{ td.seconds }}.{{ td.microseconds }} s) </h1>
+          </center>
+          <tbody>
+          {% for hit in result['hits']['hits'] %}
 
-          <tr>
-            <td class="t"><a href="/answer/{{ hit['_source']['questionId'] }}">{{ hit['_source']['question'] }}</a></td>
-            <td class="d">{{ hit['_source']['description'] }}</td>
-            <td class="q">{{ hit['_source']['date'] }}</td>
-          </tr>
+              <tr>
+                <td class="t"><a href="/answer/{{ hit['_source']['questionId'] }}">{{ hit['_source']['question'] }}</a></td>
+                <td class="d">{{ hit['_source']['description'] }}</td>
+                <td class="q">{{ hit['_source']['date'] }}</td>
+              </tr>
 
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      {% if qtype == "user" %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="t">User ID</th>
+              <th>Best answers</th>
+              <th class="d">Expertise</th>
+              <th class="q">Registration date</th>
+            </tr>
+          </thead>
+
+          <center>
+            <h1 class="body">Results: ({{ result['hits']['total'] }} in {{ td.seconds }}.{{ td.microseconds }} s) </h1>
+          </center>
+          <tbody>
+          {% for hit in result['hits']['hits'] %}
+
+              <tr>
+                <td class="t"><a href="/user/{{ hit['_source']['userId'] }}">{{ hit['_source']['userId'] }}</a></td>
+                <td>{{ hit['_source']['bestAnswers'] }}</td>
+                <td class="d">{{ hit['_source']['expertise'] }}</td>
+                <td class="q">{{ hit['_source']['registrationDate'] }}</td>
+              </tr>
+
+          {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
   </body>
 </html>

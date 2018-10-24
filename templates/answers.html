@@ -59,39 +59,41 @@
       </div>
     </div>
     <div class="body">
-    <table class="table">
-    <thead>
-      <tr>
-        <th>answerId</th>
-        <th>thumbsdown</th>
-        <th>thumbsdown</th>
-        <th>isbestanswer</th>
-        <th>answer</th>
-        <th>Date</th>
-      </tr>
-    </thead>
+      {% if not result['hits']['hits'] %}
+        <h1> Geen resultaten gevonden </h1>
+      {% else %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>answerId</th>
+              <th>thumbsdown</th>
+              <th>thumbsdown</th>
+              <th>isbestanswer</th>
+              <th>answer</th>
+              <th>Date</th>
+            </tr>
+          </thead>
 
-    <center>
-    <h1>Question: {{ data['_source']['question'] }} </h1>
-    <p> {{ data['_source']['description'] }}</p>
-    </center>
-    <tbody>
-      {% for hit in result['hits']['hits'] %}
+          <center>
+          <h1>Question: {{ data['_source']['question'] }} </h1>
+          <p> {{ data['_source']['description'] }}</p>
+          </center>
+          <tbody>
+            {% for hit in result['hits']['hits'] %}
 
-          <tr>
-            <td>{{ hit['_source']['answerId'] }}</td>
-            <td>{{ hit['_source']['thumbsDown'] }}</td>
-            <td>{{ hit['_source']['thumbsUp'] }}</td>
-            <td>{{ hit['_source']['isBestAnswer'] }}</td>
-            <td>{{ hit['_source']['answer'] }}</td>
-            <td>{{ hit['_source']['date'] }}</td>
-          </tr>
+                <tr>
+                  <td>{{ hit['_source']['answerId'] }}</td>
+                  <td>{{ hit['_source']['thumbsDown'] }}</td>
+                  <td>{{ hit['_source']['thumbsUp'] }}</td>
+                  <td>{{ hit['_source']['isBestAnswer'] }}</td>
+                  <td>{{ hit['_source']['answer'] }}</td>
+                  <td>{{ hit['_source']['date'] }}</td>
+                </tr>
 
-      {% endfor %}
-    </tbody>
-    </table>
-
-
-</div>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
   </body>
 </html>
