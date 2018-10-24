@@ -206,18 +206,18 @@ def result():
         chart.create_data(res, 'date')
         chart.setName(keyword)
 
-        # chart_labels = []
-        # chart_values = []
-        # data_type = 'date'
-        # for i in chart.data[data_type]:
-        #     chart_labels.append(i)
-        #     chart_values.append(chart.data[data_type][i])
-        # max_value = max(chart_values)
-        #
-        # graph = [chart_labels, chart_values, max_value]
+        chart_labels = []
+        chart_values = []
+        data_type = 'date'
+        for i in chart.data[data_type]:
+            chart_labels.append(i)
+            chart_values.append(chart.data[data_type][i])
+        max_value = max(chart_values)
+
+        graph = [chart_labels, chart_values, max_value]
 
 
-        return render_template("result.html",result=res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta, qtype=qtype)#, graph = graph)
+        return render_template("result.html",result=res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta, qtype=qtype, graph = graph)
 
 @app.route('/answer/<int:question_Id>')
 def answers(question_Id):

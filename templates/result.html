@@ -24,12 +24,11 @@
           }
       }
       function showExtra() {
-        var x = document.getElementById("extra");
-        if (x.style.display == "none") {
-            x.style.display = "block";
-        } else {
-            x.style.display = "none";
-        }
+        var x = document.getElementById("extra")
+        x.style.visibility=x.style.visibility == 'visible'? 'hidden' : 'visible';
+
+        var x = document.getElementById("img")
+        x.style.visibility=x.style.visibility == 'visible'? 'hidden' : 'visible';
       }
       function showGraph(){
         var x = document.getElementById("graph")
@@ -86,23 +85,60 @@
         </form>
 
         <a style="cursor: pointer;" onclick="showExtra()">Extra meuk</a>
-        <div id="extra" style="display:none;">
+        <div id="extra" style="visibility:hidden;">
+          <canvas id="chart" width="600" height="400"></canvas>
+          <script>
+             // bar chart data
+             var barData = {
+             labels : [{% for item in graph[0] %}
+                            "{{item}}",
+                        {% endfor %}],
+             datasets : [
+                {
+                      fillColor: "rgba(151,187,205,0.2)",
+                      strokeColor: "rgba(151,187,205,1)",
+                      pointColor: "rgba(151,187,205,1)",
+                   data : [{% for item in graph[1] %}
+                                {{item}},
+                              {% endfor %}]
+                }
+                ]
+             }
+
+             // get bar chart canvas
+             var mychart = document.getElementById("chart").getContext("2d");
+
+             steps = 10
+             max = {{ graph[2] }}
+             // draw bar chart
+             new Chart(mychart).Bar(barData, {
+                  scaleOverride: true,
+                  scaleSteps: steps,
+                  scaleStepWidth: Math.ceil(max / steps),
+                  scaleStartValue: 0,
+                  scaleShowVerticalLines: true,
+                  scaleShowGridLines : true,
+                  barShowStroke : true,
+                  scaleShowLabels: true
+             });
+
+          </script>
           {% if wordcloud %}
             <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
             <img id="img" src="{{ path }}" style="visibility:hidden"/>
           {% endif %}
-            <a href="{{ url_for('.timeline') }}?data_type=date" target="_blank">Timeline</a>
-        </div>
+            <a href="{{ url_for('.timeline') }}?data_type=date" target="_blank">Hits per year</a>
       </div>
     </div>
+  </div>
     <div class="body">
       {% if qtype == "question" %}
-        <table class="table">
+        <table>
           <thead>
             <tr>
-              <th class="t">Title</th>
+              <th class="q">Title</th>
               <th class="d">Description</th>
-              <th class="q">Date</th>
+              <th >Date</th>
             </tr>
           </thead>
 
@@ -113,7 +149,7 @@
           {% for hit in result['hits']['hits'] %}
 
               <tr>
-                <td class="t"><a href="/answer/{{ hit['_source']['questionId'] }}">{{ hit['_source']['question'] }}</a></td>
+                <td class="q"><a href="/answer/{{ hit['_source']['questionId'] }}">{{ hit['_source']['question'] }}</a></td>
                 <td class="d">{{ hit['_source']['description'] }}</td>
                 <td class="q">{{ hit['_source']['date'] }}</td>
               </tr>
@@ -127,7 +163,7 @@
         <table class="table">
           <thead>
             <tr>
-              <th class="t">User ID</th>
+              <th class="q">User ID</th>
               <th>Best answers</th>
               <th class="d">Expertise</th>
               <th class="q">Registration date</th>
@@ -141,7 +177,7 @@
           {% for hit in result['hits']['hits'] %}
 
               <tr>
-                <td class="t"><a href="/user/{{ hit['_source']['userId'] }}">{{ hit['_source']['userId'] }}</a></td>
+                <td class="q"><a href="/user/{{ hit['_source']['userId'] }}">{{ hit['_source']['userId'] }}</a></td>
                 <td>{{ hit['_source']['bestAnswers'] }}</td>
                 <td class="d">{{ hit['_source']['expertise'] }}</td>
                 <td class="q">{{ hit['_source']['registrationDate'] }}</td>
