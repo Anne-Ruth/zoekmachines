@@ -172,15 +172,15 @@
         <table class="table">
           <thead>
             <tr>
-              <th class="q">User ID</th>
-              <th class="b">Best answers</th>
+              <th class="q">Gebruiker ID</th>
+              <th class="b">Beste antwoorden</th>
               <th class="d">Expertise</th>
-              <th class="q">Registration date</th>
+              <th class="q">Registratie datum</th>
             </tr>
           </thead>
 
           <center>
-            <h1 class="body">Results: ({{ result['hits']['total'] }} in {{ td.seconds }}.{{ td.microseconds }} s) </h1>
+            <h1 class="body">Resultaten: ({{ result['hits']['total'] }} in {{ td.seconds }}.{{ td.microseconds }} s) </h1>
           </center>
           <tbody>
           {% for hit in result['hits']['hits'] %}

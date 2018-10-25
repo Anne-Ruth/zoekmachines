@@ -12,7 +12,7 @@
     }
     </script>
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
-    <title>User | {{ data['_source']['userId'] }}</title>
+    <title>Gebruiker | {{ data['_source']['userId'] }}</title>
   </head>
 
   <body>
@@ -62,7 +62,7 @@
           </thead>
 
           <center>
-          <h1 class="body">User: {{ data['_source']['userId'] }} </h1>
+          <h1 class="body">Gebruiker: {{ data['_source']['userId'] }} </h1>
           <p class="body"> {{ data['_source']['description'] }}</p>
           </center>
           <tbody>
