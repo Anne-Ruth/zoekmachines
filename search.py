@@ -218,6 +218,7 @@ def result():
         if len(chart_values) > 0:
             max_value = max(chart_values)
 
+        chart_labels, chart_values = zip(*sorted(zip(chart_labels, chart_values)))
         graph = [chart_labels, chart_values, max_value]
 
         return render_template("result.html",result=res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta, qtype=qtype, graph = graph)
