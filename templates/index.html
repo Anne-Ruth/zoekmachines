@@ -3,6 +3,8 @@
   <head>
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>Eend eend ga</title>
+    <script type = "text/javascript">
+    </script>
   </head>
 
   <body>
@@ -12,18 +14,18 @@
 
       <div class="navbar">
         <form class="form" action = "http://localhost:5000/result" method = "POST">
-          <input type="text" placeholder="doe ff typtyp hier" name="search">
+          <input type="text" placeholder={{set.place}} name="search">
           <button class="btn" type="submit">{{set.search}}</button>
-          <input type="radio" name="qtype" value="question" checked> Vragen
-          <input type="radio" name="qtype" value="user"> Gebruikersexpertise
+          <input type="radio" id="vraag" name="qtype" value="question" checked> Vragen
+          <input type="radio" id="gebruik" name="qtype" value="user"> Zoek alleen op gebruikersexpertise
 
-          <a style="cursor: pointer;" onclick="showAdvSearch()">Extra shit</a>
+          <a style="cursor: pointer;" onclick="showAdvSearch()">Geavanceerd zoeken</a>
           <div id="extra" style="display:none;">
-            Tijd units:
+            Periode:
             <input type="date" name="startdate" min="2009-01-28" max="2013-01-13">
             <input type="date" name="enddate" min="2009-01-28" max="2013-01-13">
 
-            Categorie units:
+            Categorie:
             <select name = "categorylist">
               <option value=""> -Kies een categorie- </option>
               {% for hit in cat['hits']['hits'] %}

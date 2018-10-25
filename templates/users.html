@@ -1,6 +1,16 @@
 <!doctype html>
 <html>
   <head>
+    <script type = "text/javascript">
+    function showFiltSearch() {
+        var x = document.getElementById("filters");
+        if (x.style.display == "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+    }
+    </script>
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>User | {{ data['_source']['userId'] }}</title>
   </head>
@@ -9,19 +19,30 @@
     <div class="header">
       <h1><a class="header" href="{{ url_for('.index') }}">{{ set.title }}</a></h1>
       <p>{{ set.subtitle }}</p>
-      <div class="navbar">
-        <div>
-          <form action="{{ url_for('.index') }}">
-            <button class="btn" type="submit">Nogmaals zoeken</button>
-          </form>
-        </div>
+      <div class="again">
+        <form action="{{ url_for('.index') }}">
+          <button class="btn" type="submit">Nogmaals zoeken</button>
+        </form>
 
-        <div id="extra" style="display:none;">
-          {% if wordcloud %}
-            <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
-            <img id="img" src="{{ path }}" style="visibility:hidden"/>
-          {% endif %}
-        </div>
+      </div>
+      <div class="navbar">
+
+
+        <form class="form" action="/u_filters/{{ data['_source']['userId'] }}" method = "POST">
+          <a style="cursor: pointer;" onclick="showFiltSearch()">Filters</a>
+
+          <div id="filters" style="display:none;">
+            <input type="checkbox" name="best_answer" > Laat alleen de beste antwoorden<br>
+            <input type="text" placeholder="Minimale aantal duimpjes omhoog" name="likes">
+            <div class="zoekbtn">
+              <button class="btn" type="submit">Pas filters toe</button>
+            </div>
+          </div>
+        </form>
+
+        <a href="/user/{{ data['_source']['userId'] }}" style="cursor: pointer;">Verwijder filters</a>
+
+
       </div>
     </div>
 
@@ -31,37 +52,36 @@
       {% else %}
         <table class="table">
           <thead>
-            <tr>
-              <th>answerId</th>
-              <th>thumbsdown</th>
-              <th>thumbsdown</th>
-              <th>isbestanswer</th>
-              <th>answer</th>
-              <th>Date</th>
-            </tr>
+              <tr>
+                <th class="answer_d">Datum</th>
+                <th class="answer_a">Antwoord</th>
+                <th class="answer_tu">Duimpjes omhoog</th>
+                <th class="answer_td">Duimpjes omlaag</th>
+                <th class="answer_ib">Het beste antwoord</th>
+              </tr>
           </thead>
 
           <center>
-          <h1>User: {{ data['_source']['userId'] }} </h1>
-          <p> {{ data['_source']['description'] }}</p>
-          {% if wordcloud %}
-          <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
-          <img id="img" src="{{ path }}" style="visibility:hidden"/>
-          {% endif %}
+          <h1 class="body">User: {{ data['_source']['userId'] }} </h1>
+          <p class="body"> {{ data['_source']['description'] }}</p>
           </center>
-
+          <tbody>
           {% for hit in result['hits']['hits'] %}
-            <tbody>
-              <tr>
-                <td>{{ hit['_source']['answerId'] }}</td>
-                <td>{{ hit['_source']['thumbsDown'] }}</td>
-                <td>{{ hit['_source']['thumbsUp'] }}</td>
-                <td>{{ hit['_source']['isBestAnswer'] }}</td>
-                <td>{{ hit['_source']['answer'] }}</td>
-                <td>{{ hit['_source']['date'] }}</td>
-              </tr>
-            </tbody>
+
+          <tr>
+            <td class="answer_d">{{ hit['_source']['date'] }}</td>
+            <td class="answer_a">{{ hit['_source']['answer'] }}</td>
+            <td class="answer_tu">{{ hit['_source']['thumbsUp'] }}</td>
+            <td class="answer_td">{{ hit['_source']['thumbsDown'] }}</td>
+            {% if hit['_source']['isBestAnswer'] == 0 %}
+              <td class="answer_ib">Nee</td>
+            {% else %}
+                <td class="answer_ib">Ja</td>
+            {% endif %}
+          </tr>
+
           {% endfor %}
+        </tbody>
         </table>
       {% endif %}
     </div>

@@ -46,22 +46,28 @@
 
       <div class="navbar">
         <form class="form" action = "http://localhost:5000/result" method = "POST">
-          <input type="text" value={{request.form['search']}} name="search">
+          <input type="text" value="{{request.form['search']}}" name="search">
           <button class="btn" type="submit">{{set.search}}</button>
+          {% if qtype == "question" %}
           <input type="radio" name="qtype" value="question" checked> Vragen
-          <input type="radio" name="qtype" value="user"> Gebruikersexpertise
+          <input type="radio" name="qtype" value="user"> Zoek alleen op gebruikersexpertise
+          {% else %}
+          <input type="radio" name="qtype" value="question"> Vragen
+          <input type="radio" name="qtype" value="user" checked> Zoek alleen op gebruikersexpertise
+          {% endif %}
 
-          <a style="cursor: pointer;" onclick="showAdvSearch()">Geadvanceerd zoeken</a>
+
+          <a style="cursor: pointer;" onclick="showAdvSearch()">Geavanceerd zoeken</a>
           <div id="adv" style="display:none;">
-            Tijd units:
+            Periode:
             <input type="date" name="startdate" min="2009-01-28" max="2013-01-13" value={{request.form['startdate']}}>
             <input type="date" name="enddate" min="2009-01-28" max="2013-01-13" value={{request.form['enddate']}}>
 
-            Categorie units:
+            Categorie:
             <select name = "categorylist">
               <option value=""> -Kies een categorie- </option>
               {% for hit in cat['hits']['hits'] %}
-                <option value = {{ hit['_source']['categoryId'] }}> {{ hit['_source']['category'] }} </option>
+                <option value = "{{ hit['_source']['categoryId'] }}"> {{ hit['_source']['category'] }} </option>
               {% endfor %}
 
             </select>
@@ -84,8 +90,7 @@
 
         </form>
 
-        <a style="cursor: pointer;" onclick="showExtra()">Extra meuk</a>
-        <div id="extra" style="visibility:hidden;">
+          {% if qtype == "question" %}
           <canvas id="chart" width="600" height="400"></canvas>
           <script>
              // bar chart data
@@ -123,27 +128,31 @@
              });
 
           </script>
-          {% if wordcloud %}
-            <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
-            <img id="img" src="{{ path }}" style="visibility:hidden"/>
           {% endif %}
-            <a href="{{ url_for('.timeline') }}?data_type=date" target="_blank">Hits per year</a>
-      </div>
+          {% if wordcloud %}
+            <img id="img" src="{{ path }}"/>
+          {% endif %}
+
+            <!-- <a href="{{ url_for('.timeline') }}?data_type=date" target="_blank">Hits per year</a> -->
+
     </div>
+    <!-- <div>
+
+    </div> -->
   </div>
     <div class="body">
       {% if qtype == "question" %}
         <table>
           <thead>
             <tr>
-              <th class="q">Title</th>
-              <th class="d">Description</th>
-              <th >Date</th>
+              <th class="q">Vraag</th>
+              <th class="d">Beschrijving</th>
+              <th>Datum</th>
             </tr>
           </thead>
 
           <center>
-            <h1 class="body">Results: ({{ result['hits']['total'] }} in {{ td.seconds }}.{{ td.microseconds }} s) </h1>
+            <h1 class="body">Resultaten: ({{ result['hits']['total'] }} in {{ td.seconds }}.{{ td.microseconds }} s) </h1>
           </center>
           <tbody>
           {% for hit in result['hits']['hits'] %}
@@ -164,7 +173,7 @@
           <thead>
             <tr>
               <th class="q">User ID</th>
-              <th>Best answers</th>
+              <th class="b">Best answers</th>
               <th class="d">Expertise</th>
               <th class="q">Registration date</th>
             </tr>
@@ -178,7 +187,7 @@
 
               <tr>
                 <td class="q"><a href="/user/{{ hit['_source']['userId'] }}">{{ hit['_source']['userId'] }}</a></td>
-                <td>{{ hit['_source']['bestAnswers'] }}</td>
+                <td class="b">{{ hit['_source']['bestAnswers'] }}</td>
                 <td class="d">{{ hit['_source']['expertise'] }}</td>
                 <td class="q">{{ hit['_source']['registrationDate'] }}</td>
               </tr>

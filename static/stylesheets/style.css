@@ -1,30 +1,86 @@
 .navbar {
       overflow: hidden;
-      background-color: #333;
-      font-family: Arial, Helvetica, sans-serif;
+      background: rgba(51,51,51,1);
       padding-bottom: 10px;
 }
 
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+   width:100%;
+   background-image:url('../img/eend2.jpeg');/*your background image*/
+   background-repeat:no-repeat;/*we want to have one single image not a repeated one*/
+   background-size:cover;/*this sets the image to fullscreen covering the whole screen*/
+   background-attachment: fixed;
+   /*css hack for ie*/
+   filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/eend2.jpeg',sizingMethod='scale');
+   -ms-filter:"progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/eend2.jpeg',sizingMethod='scale')";
+}
 div.header {
    border-top-left-radius: 130px;
    border-top-right-radius: 130px;
+   font-family: "Comic Sans MS", cursive, sans-serif;
    padding-top:10px;
-   background: #666;
+   background: rgba(102,102,102,0.8);
    color: white;
    text-align: center;
    width: 90%;
    margin-left: 5%;
 }
 
+div.filt {
+  text-align: center;
+}
+
+div.again {
+  position:relative;
+  /* bottom: 15%; */
+  margin-bottom: 1%;
+  /* left: 10%; */
+}
+
+div.zoekbtn {
+  position:relative;
+  /* bottom: 15%; */
+  margin-bottom: 1%;
+}
+/* div.back {
+  position:relative;
+  bottom: 15%;
+  margin-bottom: 1%;
+  left: 10%;
+} */
+
+/* .navbar a.remove {
+  position:fixed;
+
+} */
+
+div.again .btn {
+    padding: 6px;
+    margin-top: 8px;
+    margin-right: 16px;
+    background: #ddd;
+    font-size: 17px;
+    font-family: "Comic Sans MS", cursive, sans-serif;
+    border: none;
+    cursor: pointer;
+}
+
 div.body {
    /* border-bottom-left-radius: 130px; */
    /* border-bottom-right-radius: 130px; */
-   background: #666;
+   /* opacity :0.5; */
+   background: rgba(102,102,102,0.8);
+   font-family: "Comic Sans MS", cursive, sans-serif;
    width: 88%;
    margin-left: 5%;
    padding: 2% 1%;
 }
-h1.body {
+h1.body, p.body {
   color: white;
 }
 
@@ -42,12 +98,16 @@ a.header{
     text-decoration: none;
 }
 
+
+
+
 .navbar .btn {
     padding: 6px;
     margin-top: 8px;
     margin-right: 16px;
     background: #ddd;
     font-size: 17px;
+    font-family: "Comic Sans MS", cursive, sans-serif;
     border: none;
     cursor: pointer;
 }
@@ -58,6 +118,7 @@ a.header{
     border: none;
     margin-top: 8px;
     margin-bottom: 8px;
+    font-family: "Comic Sans MS", cursive, sans-serif;
     font-size: 17px;
     width: 300px;
 }
@@ -70,6 +131,7 @@ th {
 
 table {
     border-collapse: collapse;
+    table-layout: fixed;
     width: 98%;
     margin-left: 1%;
     /* border: 5px solid black; */
@@ -87,6 +149,26 @@ th.q, td.q {
 
 th.d, td.d {
     width: 60%;
+}
+
+th.b, td.b {
+    width: 10%;
+}
+
+th.answer_d,td.answer_d {
+    width: 10%;
+}
+th.answer_a,td.answer_a {
+    width: 40%;
+}
+th.answer_tu,td.answer_tu {
+    width: 10%;
+}
+th.answer_td,td.answer_td {
+    width: 10%;
+}
+th.answer_ib,td.answer_ib {
+    width: 5%;
 }
 
 tr:nth-child(even) {

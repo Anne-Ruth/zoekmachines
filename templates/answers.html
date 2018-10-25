@@ -33,61 +33,70 @@
     <div class="header">
       <h1><a class="header" href="{{ url_for('.index') }}">{{ set.title }}</a></h1>
       <p>{{ set.subtitle }}</p>
+      <div class="again">
+        <form action="{{ url_for('.index') }}">
+        <button class="btn" type="submit">Nogmaals zoeken</button>
+        </form>
+        <!-- <form action="{{ url_for('.result') }}" method="POST">
+        <input type="hidden" name="search" value="{{ data['_source']['questionId'] }}"></input>
+        <button class="btn" type="submit">Terug naar vraag</button>
+        </form> -->
+      </div>
       <div class="navbar">
-        <div>
-          <form action="{{ url_for('.index') }}">
-          <button class="btn" type="submit">Nogmaals zoeken</button>
-          </form>
-        </div>
+
         <form class="form" action="/a_filters/{{ data['_source']['questionId'] }}" method = "POST">
           <a style="cursor: pointer;" onclick="showFiltSearch()">Filters</a>
 
           <div id="filters" style="display:none;">
             <input type="checkbox" name="best_answer" > Laat alleen beste antwoord zien<br>
-            <input type="text" placeholder="Mininmale aan likes" name="likes">
+            <input type="text" placeholder="Minimale aantal duimpjes omhoog" name="likes">
+            <div class="zoekbtn">
               <button class="btn" type="submit">Pas filters toe</button>
+            </div>
           </div>
         </form>
+
         <a href="/answer/{{ data['_source']['questionId'] }}" style="cursor: pointer;">Verwijder filters</a>
-        <a style="cursor: pointer;" onclick="showExtra()">Extra meuk</a>
-        <div id="extra" style="display:none;">
-          {% if wordcloud %}
-          <input id="text" type="button" value="Wordcloud" onclick="showImage();"/>
-          <img id="img" src="{{ path }}" style="visibility:hidden"/>
-          {% endif %}
-      </div>
+        <!-- <div>
+          {% if wordcloud %} -->
+          <!-- <input id="text" type="button" value="Wordcloud" onclick="showImage();"/> -->
+          <!-- <img id="img" src="{{ path }}"/>
+          {% endif %} -->
+      <!-- </div> -->
       </div>
     </div>
     <div class="body">
       {% if not result['hits']['hits'] %}
-        <h1> Geen resultaten gevonden </h1>
+        <h1 class="body"> Geen resultaten gevonden </h1>
       {% else %}
         <table class="table">
           <thead>
             <tr>
-              <th>answerId</th>
-              <th>thumbsdown</th>
-              <th>thumbsdown</th>
-              <th>isbestanswer</th>
-              <th>answer</th>
-              <th>Date</th>
+              <th class="answer_d">Datum</th>
+              <th class="answer_a">Antwoord</th>
+              <th class="answer_tu">Duimpjes omhoog</th>
+              <th class="answer_td">Duimpjes omlaag</th>
+              <th class="answer_ib">Beste antwoord</th>
             </tr>
           </thead>
 
           <center>
-          <h1>Question: {{ data['_source']['question'] }} </h1>
-          <p> {{ data['_source']['description'] }}</p>
+          <h1 class="body"> {{ data['_source']['question'] }} </h1>
+          <p class="body"> {{ data['_source']['description'] }}</p>
           </center>
           <tbody>
             {% for hit in result['hits']['hits'] %}
 
                 <tr>
-                  <td>{{ hit['_source']['answerId'] }}</td>
-                  <td>{{ hit['_source']['thumbsDown'] }}</td>
-                  <td>{{ hit['_source']['thumbsUp'] }}</td>
-                  <td>{{ hit['_source']['isBestAnswer'] }}</td>
-                  <td>{{ hit['_source']['answer'] }}</td>
-                  <td>{{ hit['_source']['date'] }}</td>
+                  <td class="answer_d">{{ hit['_source']['date'] }}</td>
+                  <td class="answer_a">{{ hit['_source']['answer'] }}</td>
+                  <td class="answer_tu">{{ hit['_source']['thumbsUp'] }}</td>
+                  <td class="answer_td">{{ hit['_source']['thumbsDown'] }}</td>
+                  {% if hit['_source']['isBestAnswer'] == 0 %}
+                    <td class="answer_ib">Nee</td>
+                  {% else %}
+                      <td class="answer_ib">Ja</td>
+                  {% endif %}
                 </tr>
 
             {% endfor %}

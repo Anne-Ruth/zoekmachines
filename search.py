@@ -12,9 +12,10 @@ from datetime import timedelta
 
 class Settings:
     def __init__(self):
-        self.title = 'Eend eend ga'
-        self.subtitle = 'Doe zoeken dan slet.'
-        self.search = 'getwoe'
+        self.title = 'EEND EEND GA'
+        self.subtitle = 'Er bestaan geen domme vragen'
+        self.search = 'Zoek'
+        self.place = 'Goeievraag?'
 
 class Chart:
     def __init__(self):
@@ -205,17 +206,19 @@ def result():
         cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
         chart.create_data(res, 'date')
         chart.setName(keyword)
-
+        data_type = 'date'
         chart_labels = []
         chart_values = []
-        data_type = 'date'
+        max_value = None
+
         for i in chart.data[data_type]:
             chart_labels.append(i)
             chart_values.append(chart.data[data_type][i])
-        max_value = max(chart_values)
+
+        if len(chart_values) > 0:
+            max_value = max(chart_values)
 
         graph = [chart_labels, chart_values, max_value]
-
 
         return render_template("result.html",result=res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta, qtype=qtype, graph = graph)
 
@@ -272,6 +275,100 @@ def users(user_Id):
         wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
         wc.to_file("static/img/wordcloud.png")
     return render_template("users.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", set = settings)
+
+@app.route('/u_filters/<int:user_Id>', methods = ['POST'])
+def u_filters(user_Id):
+    likes = request.form['likes']
+    if request.form.get('best_answer'):
+        best = True
+    else:
+        best = False
+    q_res = es.get(index="users", doc_type="user", id=user_Id)
+
+    if request.method == "POST":
+
+        booty = {
+            "query": {
+                "match_all" : {}
+            }
+        }
+        if not likes:
+            if not best:
+                body={
+                    "query": {
+                        "match": {
+                            "userId": user_Id
+                        }
+                    }
+                }
+            else:
+                body = {
+                   "query" : {
+                      "constant_score" : {
+                         "filter" : {
+                            "bool" : {
+                                "must" : [
+                                    { "term" : {"userId" : user_Id}},
+                                    { "term" : {"isBestAnswer" : 1}}
+                                  ]
+                                }
+                            }
+                        }
+                    }
+                }
+        elif not best:
+            body = {
+               "query" : {
+                  "constant_score" : {
+                     "filter" : {
+                        "bool" : {
+                            "must" : [
+                                { "term" : {"userId" : user_Id}}
+                              ],
+                            "should": [
+                                { "range": {"thumbsUp" : { "gte": likes }}}
+                              ]
+                            }
+                        }
+                    }
+                }
+            }
+        else:
+            body = {
+               "query" : {
+                  "constant_score" : {
+                     "filter" : {
+                        "bool" : {
+                            "must" : [
+                                { "term" : {"userId" : user_Id}},
+                                { "term" : {"isBestAnswer" : 1}},
+                              ],
+                             "should": [
+                                 { "range": {"thumbsUp" : { "gte": likes }}}
+                               ]
+                            }
+                        }
+                    }
+                }
+            }
+
+        a_res = es.search(index="answers", size=10000, doc_type="answer", body=body)
+
+        DutchStop= stopwords.words('dutch')
+        tes = []
+        for item in a_res['hits']['hits']:
+            tokens = Counter([w for w in nltk.word_tokenize(item['_source']['answer'].lower()) if w.isalpha() and not w in set(DutchStop)])
+            tes.append(tokens.keys())
+        flat_list = [item for sublist in tes for item in sublist]
+        flat_list = Counter(flat_list)
+        if len(flat_list) > 0:
+            wc = WordCloud(max_font_size=50, max_words=100, background_color="white").generate_from_frequencies(flat_list)
+            wc.to_file("static/img/wordcloud.png")
+
+
+        cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
+        return render_template("users.html",data = q_res,result = a_res, wordcloud = flat_list,path = "../static/img/wordcloud.png", set = settings)
+
 
 @app.route('/a_filters/<int:question_Id>', methods = ['POST'])
 def a_filters(question_Id):
