@@ -18,6 +18,7 @@ body {
    /*css hack for ie*/
    filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/eend2.jpeg',sizingMethod='scale');
    -ms-filter:"progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/eend2.jpeg',sizingMethod='scale')";
+   cursor: url('duckyyy.png');
 }
 div.header {
    border-top-left-radius: 130px;
@@ -67,7 +68,6 @@ div.again .btn {
     font-size: 17px;
     font-family: "Comic Sans MS", cursive, sans-serif;
     border: none;
-    cursor: pointer;
 }
 
 div.body {
