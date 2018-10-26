@@ -10,6 +10,7 @@ from collections import defaultdict
 from datetime import datetime as dt
 from datetime import timedelta
 
+# The commonly used strings
 class Settings:
     def __init__(self):
         self.title = 'EEND EEND GA'
@@ -17,20 +18,46 @@ class Settings:
         self.search = 'Zoek'
         self.place = 'Goeievraag?'
 
+# the object that holds the chart data
 class Chart:
     def __init__(self):
         self.data = defaultdict(Counter)
         self.name = ''
 
     def create_data(self, result, data_type):
+        # remove previous data
         self.data[data_type].clear()
+
+        # go through all the hits
         for hit in result['hits']['hits']:
+            # parse the date on years
             if data_type == 'date':
                 date = dt.strptime(hit['_source'][data_type], '%Y-%m-%dT%H:%M:%S')
                 self.data[data_type][date.strftime("%Y")] += 1
             else:
+                # count the data
                 self.data[data_type][hit['_source'][data_type]] += 1
 
+    # fetch the data
+    def fetch(self, data_type):
+        chart_labels = []
+        chart_values = []
+        max_value = 0
+
+        # store the data in arrays for the chart
+        for i in self.data[data_type]:
+            chart_labels.append(i)
+            chart_values.append(self.data[data_type][i])
+
+        # get the max value for the chart
+        if len(chart_values) > 0:
+            max_value = max(chart_values)
+
+        # sort the data
+        chart_labels, chart_values = zip(*sorted(zip(chart_labels, chart_values)))
+        return [chart_labels, chart_values, max_value]
+
+    # set the name of the chart
     def setName(self, name):
         self.name = name
 
@@ -204,22 +231,10 @@ def result():
 
 
         cat = es.search(index="categories", size=10000, doc_type="category", body=booty)
-        chart.create_data(res, 'date')
-        chart.setName(keyword)
         data_type = 'date'
-        chart_labels = []
-        chart_values = []
-        max_value = None
-
-        for i in chart.data[data_type]:
-            chart_labels.append(i)
-            chart_values.append(chart.data[data_type][i])
-
-        if len(chart_values) > 0:
-            max_value = max(chart_values)
-
-        chart_labels, chart_values = zip(*sorted(zip(chart_labels, chart_values)))
-        graph = [chart_labels, chart_values, max_value]
+        chart.create_data(res, data_type)
+        chart.setName(keyword)
+        graph = chart.fetch(data_type)
 
         return render_template("result.html",result=res, cat=cat, wordcloud=flat_list,path = "../static/img/wordcloud.png", set = settings, td = time_delta, qtype=qtype, graph = graph)
 
